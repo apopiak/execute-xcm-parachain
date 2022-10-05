@@ -16,3 +16,9 @@
 .DS_Store
 .idea
 .vscode
+
+# installed node modules
+node_modules
+
+# log files created when running nodes
+*.log

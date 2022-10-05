@@ -101,7 +101,7 @@ pub fn development_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				1000.into(),
+				2000.into(),
 			)
 		},
 		Vec::new(),
@@ -111,12 +111,12 @@ pub fn development_config() -> ChainSpec {
 		None,
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2000,
 		},
 	)
 }
 
-pub fn local_testnet_config() -> ChainSpec {
+pub fn local_testnet_config(para_id: u32) -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "UNIT".into());
@@ -156,7 +156,7 @@ pub fn local_testnet_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				1000.into(),
+				para_id.into(),
 			)
 		},
 		// Bootnodes
@@ -172,7 +172,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id,
 		},
 	)
 }
@@ -217,5 +217,10 @@ fn testnet_genesis(
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
 		},
+		assets: parachain_template_runtime::AssetsConfig {
+			assets: vec![(0, get_account_id_from_seed::<sr25519::Public>("Alice"), true, 1_000)],
+			metadata: vec![(0, b"TEST".to_vec(), b"TestCoin".to_vec(), 3)],
+			accounts: vec![(0, get_account_id_from_seed::<sr25519::Public>("Alice"), 1_234_567_000_000)],
+		}
 	}
 }

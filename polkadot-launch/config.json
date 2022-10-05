@@ -12,13 +12,24 @@
 				"name": "bob",
 				"wsPort": 9955,
 				"port": 30555
+			},
+      {
+				"name": "charlie",
+				"wsPort": 9966,
+				"port": 30666
+			},
+			{
+				"name": "dave",
+				"wsPort": 9977,
+				"port": 30777
 			}
 		]
 	},
 	"parachains": [
 		{
-			"bin": "../target/release/polkadot-parachain",
-			"id": "200",
+			"bin": "../target/release/parachain-template-node",
+			"id": "2000",
+      "chain": "2k",
 			"balance": "1000000000000000000000",
 			"nodes": [
 				{
@@ -26,12 +37,44 @@
 					"name": "alice",
 					"port": 31200,
 					"flags": [
-						"--force-authoring",
+            "-lxcm=trace",
 						"--",
 						"--execution=wasm"
 					]
 				}
 			]
+		},
+    {
+			"bin": "../target/release/parachain-template-node",
+			"id": "3000",
+      "chain": "3k",
+			"balance": "1000000000000000000000",
+			"nodes": [
+				{
+					"wsPort": 9999,
+					"name": "alice",
+					"port": 32200,
+					"flags": [
+            "-lxcm=trace",
+						"--",
+						"--execution=wasm"
+					]
+				}
+			]
+		}
+	],
+  "hrmpChannels": [
+		{
+			"sender": 2000,
+			"recipient": 3000,
+			"maxCapacity": 8,
+			"maxMessageSize": 512
+		},
+    {
+			"sender": 3000,
+			"recipient": 2000,
+			"maxCapacity": 8,
+			"maxMessageSize": 512
 		}
 	],
 	"types": {
