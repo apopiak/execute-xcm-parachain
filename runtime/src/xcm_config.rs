@@ -8,7 +8,7 @@ use frame_support::{
 	traits::{Everything, Nothing, PalletInfoAccess},
 };
 use pallet_xcm::XcmPassthrough;
-use parachains_common::impls::AssetsFrom;
+// use parachains_common::impls::AssetsFrom;
 use polkadot_parachain::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
 use xcm::latest::{prelude::*, Weight as XCMWeight};
@@ -55,6 +55,12 @@ pub type CurrencyTransactor = CurrencyAdapter<
 	CheckingAccount,
 >;
 
+pub type IdConversion = (
+	AsPrefixedGeneralIndex<AssetsPalletLocation, AssetId, JustTry>,
+	AsPrefixedGeneralIndex<AssetsPalletLocation2K, AssetId, JustTry>,
+	AsPrefixedGeneralIndex<AssetsPalletLocation3K, AssetId, JustTry>,
+);
+
 /// Means for transacting assets besides the native currency on this chain.
 pub type FungiblesTransactor = FungiblesAdapter<
 	// Use this fungibles implementation:
@@ -63,7 +69,7 @@ pub type FungiblesTransactor = FungiblesAdapter<
 	ConvertedConcreteAssetId<
 		AssetId,
 		Balance,
-		AsPrefixedGeneralIndex<AssetsPalletLocation, AssetId, JustTry>,
+		IdConversion,
 		JustTry,
 	>,
 	// Convert an XCM MultiLocation into a local account id:
@@ -194,9 +200,57 @@ parameter_types! {
 	// Statemint's Assets pallet index
 	pub AssetsPalletLocation: MultiLocation =
 		PalletInstance(<Assets as PalletInfoAccess>::index() as u8).into();
+	pub AssetsPalletLocation2K: MultiLocation =
+	MultiLocation::new(1, X2(Parachain(2000), PalletInstance(<Assets as PalletInfoAccess>::index() as u8)));
+	pub AssetsPalletLocation3K: MultiLocation =
+	MultiLocation::new(1, X2(Parachain(3000), PalletInstance(<Assets as PalletInfoAccess>::index() as u8)));
+}
+
+pub fn starts_with(loc: &MultiLocation, prefix: &MultiLocation) -> bool {
+	if loc.parents != prefix.parents {
+		return false
+	}
+	junctions_starts_with(&loc.interior, &prefix.interior)
+}
+pub fn junctions_starts_with(loc: &Junctions, prefix: &Junctions) -> bool {
+	if loc.len() < prefix.len() {
+		return false
+	}
+	prefix.iter().zip(loc.iter()).all(|(l, r)| l == r)
+}
+
+use xcm_executor::traits::FilterAssetLocation;
+use frame_support::pallet_prelude::Get;
+/// Asset filter that allows all assets from a certain location.
+pub struct AssetsFrom<T>(PhantomData<T>);
+impl<T: Get<MultiLocation>> FilterAssetLocation for AssetsFrom<T> {
+	fn filter_asset_location(asset: &MultiAsset, origin: &MultiLocation) -> bool {
+		let loc = T::get();
+		let allow = &loc == origin &&
+			matches!(asset, MultiAsset { id: Concrete(asset_loc), fun: Fungible(_a) }
+			if starts_with(asset_loc, &loc));
+		log::debug!(target: "xcm::FilterAssetLocation", "AssetsFrom<{loc:?}>: allow: {allow:?} for asset: {asset:?} and origin: {origin:?}");
+		allow
+	}
 }
 
 pub type Reserves = (NativeAsset, AssetsFrom<Parachain2kLocation>, AssetsFrom<Parachain3kLocation>);
+
+use xcm_executor::traits::WeightTrader;
+pub struct NoopTrader;
+impl WeightTrader for NoopTrader {
+	/// Create a new trader instance.
+	fn new() -> Self {
+		Self
+	}
+
+	/// Purchase execution weight credit in return for up to a given `fee`. If less of the fee is required
+	/// then the surplus is returned. If the `fee` cannot be used to pay for the `weight`, then an error is
+	/// returned.
+	fn buy_weight(&mut self, weight: u64, payment: xcm_executor::Assets) -> Result<xcm_executor::Assets, XcmError> {
+		Ok(payment)
+	}
+}
 
 pub struct XcmConfig;
 impl xcm_executor::Config for XcmConfig {
@@ -210,8 +264,7 @@ impl xcm_executor::Config for XcmConfig {
 	type LocationInverter = LocationInverter<Ancestry>;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, Call, MaxInstructions>;
-	type Trader =
-		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
+	type Trader = NoopTrader;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
 	type AssetClaims = PolkadotXcm;

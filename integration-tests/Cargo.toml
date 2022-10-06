@@ -1,0 +1,45 @@
+[package]
+name = "runtime-integration-tests"
+version = "0.1.0"
+description = "Integration tests"
+edition = "2021"
+license = "Apache 2.0"
+
+[dependencies]
+# Cumulus dependencies
+cumulus-primitives-core = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.29" }
+parachain-info = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.29" }
+
+# Polkadot dependencies
+polkadot-parachain = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29", features = ["wasm-api"] }
+xcm-builder = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+pallet-xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+xcm-executor = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+polkadot-xcm = { package = "xcm", git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+
+# Substrate dependencies
+frame-support = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+frame-system = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+pallet-balances = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+
+polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+polkadot-runtime-parachains = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+
+rococo-runtime = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.29" }
+para-runtime = { package = "parachain-template-runtime", path = "../runtime"}
+
+[dev-dependencies]
+xcm-emulator = { git = "https://github.com/apopiak/xcm-simulator", branch = "polkadot-v0.9.29" }
+hex-literal = "0.3.1"
+num-traits = "0.2.15"
+pretty_assertions = "1.2.1"
+sp-arithmetic = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+test-case = "2.2.1"
+
+env_logger = "*"
