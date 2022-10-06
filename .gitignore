@@ -22,3 +22,6 @@ node_modules
 
 # log files created when running nodes
 *.log
+
+# ignore generated spec files
+rococo*.json
